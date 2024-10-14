@@ -11,6 +11,12 @@ public enum DeliveryMethod: String, Sendable {
     case email
 }
 
+///
+public enum TenantsRequest: Sendable {
+    case selected
+    case tenantIds([String])
+}
+
 /// The provider to use in an OAuth flow.
 public struct OAuthProvider: Sendable, ExpressibleByStringLiteral {
     public static let facebook: OAuthProvider = "facebook"
