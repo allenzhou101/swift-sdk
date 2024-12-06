@@ -39,22 +39,15 @@ public protocol DescopeFlowViewControllerDelegate: AnyObject {
 ///     showMainScreen()
 /// }
 /// ```
-///
-/// You can also use the source code for this class as an example of how to incorporate
-/// a ``DescopeFlowView`` into your own view controller.
 public class DescopeFlowViewController: UIViewController {
 
     private lazy var flowView: DescopeFlowView = createFlowView()
 
-    /// A delegate object for receiving events about the state of the flow.
     public weak var delegate: DescopeFlowViewControllerDelegate?
 
-    /// The current state of the ``DescopeFlowViewController``.
     public var state: DescopeFlowState {
         return flowView.state
     }
-
-    // UIViewController
 
     public override func viewDidLoad() {
         super.viewDidLoad()
@@ -69,41 +62,23 @@ public class DescopeFlowViewController: UIViewController {
         view.addSubview(flowView)
     }
 
-    /// Overridden to ensure the cancel button is only set when appropriate
-    public override func willMove(toParent parent: UIViewController?) {
-        super.willMove(toParent: parent)
-        if navigationController?.viewControllers.first == self {
-            navigationItem.leftBarButtonItem = cancelBarButton
-        } else {
-            navigationItem.leftBarButtonItem = nil
-        }
-    }
+    private lazy var activityView = UIActivityIndicatorView()
 
-    // Flow
-
-    /// Loads and displays a Descope Flow.
-    ///
-    /// The ``delegate`` property should be set before calling this function to ensure
-    /// no delegate updates are missed.
-    ///
-    /// ```swift
-    /// let flowURL = URL(string: "https://example.com/myflow")!
-    /// let flow = DescopeFlow(url: flowURL)
-    /// flowViewController.start(flow: flow)
-    /// ```
-    ///
-    /// You can call this method while the view is hidden to prepare the flow ahead of time,
-    /// watching for updates via the delegate, and showing the view when it's ready.
     public func start(flow: DescopeFlow) {
         flowView.delegate = self
         flowView.start(flow: flow)
     }
 
+    public override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+        if let navigationController, navigationController.topViewController === self, navigationController.viewControllers.count == 1 {
+            navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(handleCancel))
+        } else {
+            navigationItem.leftBarButtonItem = nil
+        }
+    }
+
     // Internal
-
-    private lazy var activityView = UIActivityIndicatorView()
-
-    private lazy var cancelBarButton = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(handleCancel))
 
     @objc private func handleCancel() {
         delegate?.flowViewControllerDidCancel(self)
